@@ -17,5 +17,13 @@
   "bugs": {
     "url": "https://github.com/yash2106-byte/Distributed-Job-Queue/issues"
   },
-  "homepage": "https://github.com/yash2106-byte/Distributed-Job-Queue#readme"
+  "homepage": "https://github.com/yash2106-byte/Distributed-Job-Queue#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }
