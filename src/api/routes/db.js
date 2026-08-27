@@ -1,19 +1,19 @@
-import web from "../web.js";
-import pg from "pg";
 import pool from "../../../databaseConnet.js";
 
 const Register = async function register(req, res) {
     try {
-        const { name, password } = req.body;
+        const { queue_name, payload, priority } = req.body;
 
         const result = await pool.query(
-            "INSERT INTO jobs (name, password) VALUES ($1, $2) RETURNING *",
-            [name, password]
+            `INSERT INTO jobs (queue_name, payload, priority)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [queue_name, payload, priority]
         );
 
         res.json({
-            message: "User registered",
-            user: result.rows[0]
+            message: "Job registered",
+            job: result.rows[0]
         });
 
     } catch (error) {
