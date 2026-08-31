@@ -1,6 +1,6 @@
 import web from "./web.js";
 import "./routes/healthcheck.js";
-import { Register } from "./routes/db.js";
+import { Register, GetJobs } from "./routes/db.js";
 
 const port = 8000;
 web.get("/db", (req, res) => {
@@ -8,6 +8,7 @@ web.get("/db", (req, res) => {
 });
 
 web.route("/register").post(Register)
+web.route("/getjobs").get(GetJobs)
 
 web.listen(port, () => {
     console.log(`server is up at ${port}`);
