@@ -9,7 +9,7 @@ const Agent1 = async function agent1(job) {
 
     return {
         success: true,
-        result: "Job executed successfully"
+        message: "Job executed successfully"
     };
 }
 

@@ -24,17 +24,25 @@ const Worker = async function worker() {
 
     const job_id = WaitingJobs.rows[0].id;
     const job = WaitingJobs.rows[0].payload;
-    Agent1(job)
-
-    console.log("Job payload:", job);
-
-    // await pool.query(
-    //     `UPDATE jobs 
-    //      SET status = 'completed' 
-    //      WHERE id = $1
-    //      RETURNING *`,
-    //     [job_id]
-    // );
+    const result = await Agent1(job)
+    if (result.success)
+    {
+    await pool.query(
+        `UPDATE jobs 
+         SET status = 'completed' 
+         WHERE id = $1
+         RETURNING *`,
+        [job_id]
+    );
+    }else{
+        await pool.query(
+            `UPDATE jobs
+            SET status = 'failed
+            `
+        )
+    }
+    
+    
 };
 
 Worker();
