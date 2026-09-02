@@ -1,5 +1,6 @@
 import web from "./web.js";
 import "./routes/healthcheck.js";
+import "../worker/worker.js";
 import { Register, GetJobs } from "./routes/db_Operation_controller.js";
 
 const port = 8000;

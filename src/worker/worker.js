@@ -1,23 +1,40 @@
 import pool from "../../databaseConnet.js";
-
-const Worker = async function worker (val){
+import Agent1 from "../jobs/agent.js";
+const Worker = async function worker() {
     const WaitingJobs = await pool.query(
         `SELECT 
-            id,queue_name,payload,priority,status
-            FROM jobs
-            where status = 'queued'
-            AND ID > 3
-        `
+            id,
+            queue_name,
+            payload,
+            priority,
+            status
+        FROM jobs
+        WHERE status = 'pending'
+        ORDER BY PRIORITY DESC,id ASC
+        LIMIT 1`
     );
-    console.log("This is the job details:", WaitingJobs.rows[0]);
-    
-    const job_id = WaitingJobs.rows[0].id;
-    
-    const UpdateJobs = await pool.query(
-        `UPDATE jobs SET status = 'completed' where id =$1
-        RETURNING *`,
-        [job_id]
-    ) ;
-}
 
-Worker('hello')
+    console.log("Number of jobs:", WaitingJobs.rows.length);
+    console.log("This is the job details:", WaitingJobs.rows[0]);
+
+    if (WaitingJobs.rows.length === 0) {
+        console.log("No queued jobs found.");
+        return;
+    }
+
+    const job_id = WaitingJobs.rows[0].id;
+    const job = WaitingJobs.rows[0].payload;
+    Agent1(job)
+
+    console.log("Job payload:", job);
+
+    // await pool.query(
+    //     `UPDATE jobs 
+    //      SET status = 'completed' 
+    //      WHERE id = $1
+    //      RETURNING *`,
+    //     [job_id]
+    // );
+};
+
+Worker();
