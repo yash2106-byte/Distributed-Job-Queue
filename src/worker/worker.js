@@ -49,7 +49,7 @@ const Worker = async function worker() {
             const job = WaitingJobs.rows[0];
             const job_id = job.id;
 
-            console.log("Job found:", job);
+            console.log("Job found:", job_id);
 
             // Mark job as running
             await client.query(
