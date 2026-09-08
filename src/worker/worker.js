@@ -79,33 +79,35 @@ const Worker = async function worker() {
             
             // Execute the actual job
             const queue = job.queue_name;
-            const result = ""
+            let result = ""
             switch (queue) {
 
                 case 'emails':
-                    result = sendEmail(job.payload);
+                    result =await  sendEmail(job.payload);
                     break;
 
                 case 'notifications':
-                    result = Notification(job.payload);
+                    result = await Notification(job.payload);
                     break;
 
                 case 'reports':
-                    result = Reports(job.payload);
+                    result =await  Reports(job.payload);
                     break;
 
                 case 'data_processing':
-                    result =  DataProcessing(job.payload);
+                    result = await  DataProcessing(job.payload);
                     break;
 
                 case 'image_processing':
-                    result = ImageProcessing(job.payload);
+                    result = await ImageProcessing(job.payload);
                     break;
 
                 default:
                     console.log(queue, "this queue is missing");
                     break;
             }
+            console.log(result);
+            
 
             // const result = await Agent1(job.payload);
 
