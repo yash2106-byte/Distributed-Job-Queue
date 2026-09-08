@@ -1,6 +1,10 @@
 import pool from "../../databaseConnet.js";
 import Agent1 from "../jobs/agent.js";
 import sendEmail from "../handlers/sendEmail.js";
+import Reports from "../handlers/reports.js";
+import Notification from "../handlers/notifications.js";
+import ImageProcessing from "../handlers/image_processing.js";
+import DataProcessing from "../handlers/data_processing.js";
 
 const Worker = async function worker() {
 
@@ -74,9 +78,33 @@ const Worker = async function worker() {
             console.log(job.queue_name);
             
             // Execute the actual job
-            if (job.queue_name == "emails"){
-                const result = await sendEmail(job.payload)
+            const queue = job.queue_name;
+            const result = ""
+            switch (queue) {
 
+                case 'emails':
+                    result = sendEmail(job.payload);
+                    break;
+
+                case 'notifications':
+                    result = Notification(job.payload);
+                    break;
+
+                case 'reports':
+                    result = Reports(job.payload);
+                    break;
+
+                case 'data_processing':
+                    result =  DataProcessing(job.payload);
+                    break;
+
+                case 'image_processing':
+                    result = ImageProcessing(job.payload);
+                    break;
+
+                default:
+                    console.log(queue, "this queue is missing");
+                    break;
             }
 
             // const result = await Agent1(job.payload);
