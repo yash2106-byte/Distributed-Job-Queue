@@ -1,5 +1,6 @@
 import pool from "../../databaseConnet.js";
 import Agent1 from "../jobs/agent.js";
+import sendEmail from "../handlers/sendEmail.js";
 
 const Worker = async function worker() {
 
@@ -49,7 +50,8 @@ const Worker = async function worker() {
             const job = WaitingJobs.rows[0];
             const job_id = job.id;
 
-            console.log("Job found:", job_id);
+
+            // console.log("Job found:", job);
 
             // Mark job as running
             await client.query(
@@ -68,10 +70,16 @@ const Worker = async function worker() {
             client.release();
             client = null;
 
-            console.log(`Job ${job_id} is now running.`);
-
+            // console.log(`Job ${job_id} is now running.`);
+            console.log(job.queue_name);
+            
             // Execute the actual job
-            const result = await Agent1(job.payload);
+            if (job.queue_name == "emails"){
+                const result = await sendEmail(job.payload)
+
+            }
+
+            // const result = await Agent1(job.payload);
 
             // Job succeeded
             if (result.success) {
@@ -85,7 +93,7 @@ const Worker = async function worker() {
                     [job_id]
                 );
 
-                console.log(`Job ${job_id} succeeded.`);
+                // console.log(`Job ${job_id} succeeded.`);
 
             }
 
