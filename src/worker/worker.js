@@ -52,19 +52,19 @@ const Worker = async function worker() {
                 continue;
             }
 
-            // Job found
+            // if available then start working on based on there job status
+
             const job = WaitingJobs.rows[0];
             const job_id = job.id;
             const job_state = job.status;
+            let queue = ""
             if (job_state === "failed"){
-                FailedJobs(job) 
+                queue = await FailedJobs(job) 
+                console.log(queue);
+                
             }
-
-
-            // console.log("Job found:", job);
-
-            // Mark job as running
-            await client.query(
+            else{
+                await client.query(
                 `
                 UPDATE jobs
                 SET status = 'running'
@@ -72,7 +72,6 @@ const Worker = async function worker() {
                 `,
                 [job_id]
             );
-
             // Commit the transaction
             await client.query("COMMIT");
 
@@ -80,11 +79,12 @@ const Worker = async function worker() {
             client.release();
             client = null;
 
-            // console.log(`Job ${job_id} is now running.`);
             console.log(job.queue_name);
             
             // Execute the actual job
-            const queue = job.queue_name;
+            queue = job.queue_name;
+            }
+     
             let result = ""
             switch (queue) {
 
@@ -113,9 +113,6 @@ const Worker = async function worker() {
                     break;
             }
             console.log(result);
-            
-
-            // const result = await Agent1(job.payload);
 
             // Job succeeded
             if (result.success) {
@@ -124,13 +121,10 @@ const Worker = async function worker() {
                     `
                     UPDATE jobs
                     SET status = 'succeeded'
-                    WHERE id = $1
+                    WHERE id = $1;
                     `,
                     [job_id]
                 );
-
-                // console.log(`Job ${job_id} succeeded.`);
-
             }
 
             // Job failed
@@ -139,13 +133,12 @@ const Worker = async function worker() {
                 await pool.query(
                     `
                     UPDATE jobs
-                    SET status = 'failed'
+                    SET status = 'failed',
+                        max_attempts = max_attempts + 1
                     WHERE id = $1
                     `,
                     [job_id]
                 );
-
-                console.log(`Job ${job_id} failed.`);
             }
 
         } catch (error) {
