@@ -1,70 +1,33 @@
 import pool from "../../databaseConnet.js";
-const FailedJobs = async function failedjobs (job) {
-        while (true){
-            let attempt = job.max_attempts
 
-            // Making jobs wait depending on the attempts taken
-            let BaseDelay = 1000;
-            let MaxDelay = 3000;
-            let delay = Math.min(BaseDelay * 2 ** attempt, MaxDelay);
-            let jitter = Math.random() * 500; // 0–500 ms
-            // await new Promise(resolve =>
-            //     setTimeout(resolve, delay + jitter)
-            // );
-            await new Promise(resolve =>
-                setTimeout(resolve, 2000)
-            );
-            console.log("working on this job", job.id);
-            console.log("no of failed attempts are",attempt);
-            
-            
+const FailedJobs = async function failedJobs(job) {
 
+    const attempt = job.max_attempts;
 
-            let client;
-            try{
-                client = await pool.connect();
-                const job_id = job.id
+    const BaseDelay = 1000;
+    const MaxDelay = 3000;
 
-                await client.query(
-                `
-                UPDATE jobs
-                SET status = 'running'
-                WHERE id = $1
-                `,
-                [job_id]
-                );
+    const delay = Math.min(
+        BaseDelay * 2 ** attempt,
+        MaxDelay
+    );
 
-                // Commit the transaction
-                await client.query("COMMIT");
-                client.release();
-                client = null;
-                const queue = job.queue_name;
-                return queue
-            
-            }catch (error) {
+    const jitter = Math.random() * 500;
 
-            console.error("Worker error:", error);
+    await new Promise(resolve =>
+        setTimeout(resolve, delay + jitter)
+    );
 
-            // If transaction is still active, rollback
-            if (client) {
+    console.log("Retrying job:", job.id);
+    console.log("Failed attempts:", attempt);
 
-                try {
-                    await client.query("ROLLBACK");
-                } catch (rollbackError) {
-                    console.error("Rollback failed:", rollbackError);
-                }
+    await pool.query(`
+        UPDATE jobs
+        SET status = 'running'
+        WHERE id = $1
+    `, [job.id]);
 
-                client.release();
-                client = null;
-            }
-
-            // Wait before trying again
-            await new Promise(resolve =>
-                setTimeout(resolve, 2000)
-            );
-        }
-
-        }
-}
+    return job.queue_name;
+};
 
 export default FailedJobs;
