@@ -5,6 +5,7 @@ import Reports from "../handlers/reports.js";
 import Notification from "../handlers/notifications.js";
 import ImageProcessing from "../handlers/image_processing.js";
 import DataProcessing from "../handlers/data_processing.js";
+import FailedJobs from "./FailedJobs.js";
 
 const Worker = async function worker() {
 
@@ -26,9 +27,10 @@ const Worker = async function worker() {
                     queue_name,
                     payload,
                     priority,
-                    status
+                    status,
+                    max_attempts
                 FROM jobs
-                WHERE status = 'queued'
+                WHERE status = 'queued' OR status = 'failed'
                 ORDER BY priority DESC, id ASC
                 LIMIT 1
                 FOR UPDATE SKIP LOCKED
@@ -53,6 +55,10 @@ const Worker = async function worker() {
             // Job found
             const job = WaitingJobs.rows[0];
             const job_id = job.id;
+            const job_state = job.status;
+            if (job_state === "failed"){
+                FailedJobs(job) 
+            }
 
 
             // console.log("Job found:", job);
